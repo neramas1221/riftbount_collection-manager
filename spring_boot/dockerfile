@@ -1,0 +1,28 @@
+# Stage 1: Build the code using the official Gradle environment
+FROM gradle:8-jdk17 AS build
+WORKDIR /app
+
+# Run as root to prevent permission issues when building
+USER root
+
+# Copy all your code into the container
+COPY . . 
+
+# Make sure the script is executable
+RUN chmod +x gradlew
+
+# Build the application using your wrapper
+RUN ./gradlew build -x test --no-daemon
+
+# Stage 2: Run the compiled code in a lightweight container
+FROM eclipse-temurin:17-jre-jammy
+WORKDIR /app
+
+# Grab the compiled .jar file from Stage 1
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Expose the web port
+EXPOSE 8080
+
+# Turn on the server!
+ENTRYPOINT ["java", "-jar", "app.jar"]

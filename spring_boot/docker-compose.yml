@@ -1,0 +1,17 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://card_db:5432/card_db
+      SPRING_DATASOURCE_USERNAME: card_user
+      SPRING_DATASOURCE_PASSWORD: card_password
+    
+    networks:
+      - card_net
+
+networks:
+  card_net:
+    name: card_net
+    external: true
