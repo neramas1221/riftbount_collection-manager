@@ -1,0 +1,47 @@
+services:
+  database:
+    image: postgres:16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: card_db
+      POSTGRES_USER: card_user
+      POSTGRES_PASSWORD: card_password
+    
+    networks:
+      card_net:
+        aliases:
+          - card_db
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U card_user -d card_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  flyway:
+    image: flyway/flyway:latest
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://database:5432/card_db
+      FLYWAY_USER: card_user
+      FLYWAY_PASSWORD: card_password
+    volumes:
+      - ../migration:/flyway/sql
+    networks:
+      - card_net
+    depends_on:
+      database:
+        condition: service_healthy
+
+networks:
+  card_net:
+    name: card_net
+    external: false
+
+volumes:
+  pgdata:
