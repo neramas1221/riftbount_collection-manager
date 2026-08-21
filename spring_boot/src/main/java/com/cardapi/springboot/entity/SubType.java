@@ -1,9 +1,17 @@
 package com.cardapi.springboot.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name="card_types")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class SubType {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -11,28 +19,4 @@ public class SubType {
 
     @Column(nullable = false)
     public String subType;
-
-    public SubType(){
-
-    }
-
-    public SubType(String subType){
-        this.subType = subType;
-    }
-
-    public void setId(Integer id){
-        this.id = id;
-    }
-
-    public Integer getId(){
-        return id;
-    }
-
-    public void setSubType(String subType){
-        this.subType = subType;
-    }
-
-    public String getSubType(){
-        return subType;
-    }
 }

@@ -19,7 +19,7 @@ public class CardSetService {
 
     public List<CardSetResponse> getAllCardSets() {
         return repository.findAll().stream()
-            .map(set -> new CardSetResponse(set.getId(), set.getSet()))
+            .map(set -> new CardSetResponse(set.getId(), set.getSetName()))
             .collect(Collectors.toList());
     }
 
@@ -29,6 +29,6 @@ public class CardSetService {
 
         CardSet savedCardSet = repository.save(newCardSet);
 
-        return new CardSetResponse(savedCardSet.getId(), savedCardSet.getSet());
+        return new CardSetResponse(savedCardSet.getId(), savedCardSet.getSetName());
     }
 }
