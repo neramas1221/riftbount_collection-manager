@@ -39,12 +39,29 @@ public class AllCard {
     @Column(name = "recent_price", nullable = false)
     public float cardPrice;
 
+    @Column(name = "energy", nullable = true)
+    public Integer energy;
+
+    @Column(name = "might", nullable = true)
+    public Integer might;
+
+    @Column(name = "power", nullable = true)
+    public Integer power;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subtype_id", nullable = false)
+    public SubType subTypeId;
+
+    @Column(name = "is_signiture", nullable = false)
+    public Boolean isSignature;
+
     public AllCard(){
     }
 
     public AllCard(String cardName, CardSet cardSet, boolean isOverNumbered,
         boolean isAlternative, CardType cardType, CardColour cardColour, Integer isToken,
-        String collectorNumber, float cardPrice) {
+        String collectorNumber, float cardPrice, Integer energy, Integer might,
+        Integer power, SubType subTypeId, Boolean isSignature) {
         this.cardName = cardName;
         this.cardSet = cardSet;
         this.isOverNumbered = isOverNumbered;
@@ -54,6 +71,11 @@ public class AllCard {
         this.isToken = isToken;
         this.collectorNumber = collectorNumber;
         this.cardPrice = cardPrice;
+        this.energy = energy;
+        this.might = might;
+        this.power = power;
+        this.subTypeId = subTypeId;
+        this.isSignature = isSignature;
     }
 
     public void setId(Integer id){
@@ -134,6 +156,46 @@ public class AllCard {
 
     public float getCardPrice(){
         return cardPrice;
+    }
+
+    public void setEnergy(Integer energy){
+        this.energy = energy;
+    }
+
+    public Integer getEnergy(){
+        return energy;
+    }
+
+    public void setMight(Integer might){
+        this.might = might;
+    }
+
+    public Integer getMight(){
+        return might;
+    }
+
+    public void setPower(Integer power){
+        this.power = power;
+    }
+
+    public Integer getPower(){
+        return power;
+    }
+
+    public void setSubType(SubType subType){
+        this.subTypeId = subType;
+    }
+
+    public SubType getSubType(){
+        return subTypeId;
+    }
+
+    public void setIsSigniture(Boolean isSignature){
+        this.isSignature = isSignature;
+    }
+
+    public Boolean getIsSignature(){
+        return isSignature;
     }
 
 }

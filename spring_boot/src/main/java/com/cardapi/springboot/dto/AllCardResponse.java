@@ -11,10 +11,17 @@ public class AllCardResponse {
     private Integer isToken;
     private String collectorNumber;
     private float cardPrice;
+    private Integer energy;
+    private Integer might;
+    private Integer power;
+    private Integer subTypeId;
+    private Boolean isSignature;
     
     public AllCardResponse(Integer id, String cardName, Integer cardSet, 
         boolean isOverNumbered, boolean isAlternative, Integer cardType, 
-        Integer cardColour, Integer isToken, String collectorNumber, float cardPrice){
+        Integer cardColour, Integer isToken, String collectorNumber, 
+        float cardPrice, Integer energy, Integer might, Integer power, 
+        Integer subTypeId, Boolean isSignature){
             this.id = id;
             this.cardName = cardName;
             this.cardSet = cardSet;
@@ -25,6 +32,11 @@ public class AllCardResponse {
             this.isToken = isToken;
             this.collectorNumber = collectorNumber;
             this.cardPrice = cardPrice;
+            this.energy = energy;
+            this.might = might;
+            this.power = power;
+            this.subTypeId = subTypeId;
+            this.isSignature = isSignature;
         }
 
     public Integer getId(){return id;}
@@ -46,4 +58,14 @@ public class AllCardResponse {
     public String getCollectorNumber(){return collectorNumber;}
 
     public float getCardPrice(){return cardPrice;}
+
+    public Integer getEnergy(){return energy;}
+
+    public Integer getMight(){return might;}
+
+    public Integer getPower(){return power;}
+
+    public Integer getSubTypeId(){return subTypeId;}
+
+    public Boolean getIsSigniture(){return isSignature;}
 }

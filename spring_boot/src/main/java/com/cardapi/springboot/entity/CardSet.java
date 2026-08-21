@@ -7,8 +7,12 @@ public class CardSet {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
     public Integer id;
+
     @Column(nullable=false, unique=true, length=255)
     public String setName;
+
+    @Column(nullable = false)
+    public Integer totalCollectorNum;
 
     public CardSet(){
     }
@@ -34,4 +38,12 @@ public class CardSet {
         return setName;
     }
 
+
+    public void setTotalCollectorNum(Integer totalCollectorNum){
+        this.totalCollectorNum = totalCollectorNum;
+    }
+
+    public Integer getTotalCollectorNum(){
+        return totalCollectorNum;
+    }
 }

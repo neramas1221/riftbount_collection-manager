@@ -45,7 +45,12 @@ public class AllCardService {
                 card.getCardColour().getId(),
                 card.getIsToken(), 
                 card.getCollectorNumber(), 
-                card.getCardPrice()
+                card.getCardPrice(),
+                card.getEnergy(),
+                card.getMight(),
+                card.getPower(),
+                card.getSubType().getId(),
+                card.getIsSignature()
             ))
             .collect(Collectors.toList());
     }
@@ -76,6 +81,11 @@ public class AllCardService {
             savedCard.getCardColour().getId(), 
             savedCard.getIsToken(), 
             savedCard.getCollectorNumber(), 
-            savedCard.getCardPrice()); 
+            savedCard.getCardPrice(),
+            savedCard.getEnergy(),
+            savedCard.getMight(),
+            savedCard.getPower(),
+            savedCard.getSubType().getId(),
+            savedCard.getIsSignature()); 
     }
 }

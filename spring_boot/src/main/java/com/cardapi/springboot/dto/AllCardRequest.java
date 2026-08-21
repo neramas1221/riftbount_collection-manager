@@ -19,6 +19,16 @@ public class AllCardRequest {
 
     private float cardPrice;
 
+    private Integer energy;
+
+    private Integer might;
+
+    private Integer power;
+
+    private Integer subTypeId;
+
+    private Boolean isSignature;
+
     public void setCardName(String cardName){this.cardName = cardName;}
 
     public String getCardName(){return cardName;}
@@ -54,4 +64,24 @@ public class AllCardRequest {
     public void setCardPrice(float cardPrice){this.cardPrice = cardPrice;}
 
     public float getCardPrice(){return cardPrice;}
+
+    public void setEnergy(Integer energy){this.energy = energy;}
+
+    public Integer getEnergy(){return energy;}
+
+    public void setMight(Integer might){this.might = might;}
+
+    public Integer getMight(){return might;}
+
+    public void setPower(Integer power){this.power = power;}
+
+    public Integer getPower(){return power;}
+
+    public void setSubTypeId(Integer subTypeId){this.subTypeId = subTypeId;}
+
+    public Integer getSubTypeId(){return subTypeId;}
+
+    public void setIsSignature(boolean isSignature){this.isSignature = isSignature;}
+
+    public boolean getIsSignature(){return isSignature;}
 }
