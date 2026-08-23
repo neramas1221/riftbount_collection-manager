@@ -12,12 +12,12 @@ import com.cardapi.springboot.entity.AllCard;
 import com.cardapi.springboot.entity.CardColour;
 import com.cardapi.springboot.entity.CardSet;
 import com.cardapi.springboot.entity.CardType;
-import com.cardapi.springboot.entity.SubType;
+import com.cardapi.springboot.entity.SuperType;
 import com.cardapi.springboot.repository.AllCardRepository;
 import com.cardapi.springboot.repository.CardColourRepository;
 import com.cardapi.springboot.repository.CardSetRepository;
 import com.cardapi.springboot.repository.CardTypeRepository;
-import com.cardapi.springboot.repository.SubTypeRepository;
+import com.cardapi.springboot.repository.SuperTypeRepository;
 import com.cardapi.springboot.specification.AllCardSpecification;
 import com.cardapi.springboot.dto.UserCardFilterRequest;
 
@@ -30,7 +30,7 @@ public class AllCardService {
     private final CardSetRepository setRepository;
     private final CardTypeRepository typeRepository;
     private final CardColourRepository colourRepository;
-    private final SubTypeRepository subTypeRepository;
+    private final SuperTypeRepository superTypeRepository;
 
     public List<AllCardResponse> getAllCard() {
             return repository.findAll().stream()
@@ -42,13 +42,13 @@ public class AllCardService {
         CardSet set = setRepository.findById(request.getCardSet()).orElseThrow();
         CardType type = typeRepository.findById(request.getCardType()).orElseThrow();
         CardColour colour = colourRepository.findById(request.getCardColour()).orElseThrow();
-        SubType subType = subTypeRepository.findById(request.getCardSet()).orElseThrow();
+        SuperType superType = superTypeRepository.findById(request.getSuperType()).orElseThrow();
         
         AllCard newCard = new AllCard();
         newCard.setCardName(request.getCardName());
         newCard.setCardSet(set);
-        newCard.setOverNumbered(request.getIsOverNumbered());
-        newCard.setAlternative(request.getIsAlternative());
+        newCard.setOverNumbered(request.isOverNumered());
+        newCard.setAlternative(request.isAlternative());
         newCard.setCardType(type);
         newCard.setCardColour(colour);
         newCard.setIsToken(request.getIsToken());
@@ -57,34 +57,25 @@ public class AllCardService {
         newCard.setEnergy(request.getEnergy());
         newCard.setMight(request.getMight());
         newCard.setPower(request.getPower());
-        newCard.setSubType(subType);
-        newCard.setSignature(request.getIsSignature());
+        newCard.setSubType(request.getSubType());
+        newCard.setSignature(request.isSignature());
+        newCard.setSuperType(superType);
 
         AllCard savedCard = repository.save(newCard);
 
-        return new AllCardResponse(savedCard.getId(), 
-            savedCard.getCardName(), 
-            savedCard.getCardSet().getId(), 
-            savedCard.isOverNumbered(), 
-            savedCard.isAlternative(), 
-            savedCard.getCardType().getId(), 
-            savedCard.getCardColour().getId(), 
-            savedCard.getIsToken(), 
-            savedCard.getCollectorNumber(), 
-            savedCard.getCardPrice(),
-            savedCard.getEnergy(),
-            savedCard.getMight(),
-            savedCard.getPower(),
-            savedCard.getSubType().getId(),
-            savedCard.isSignature()); 
+        return mapToResponse(savedCard);
     }
 
-    public List<AllCard> getCardsByColour(String colourName) {
-        return repository.findByCardColour_ColourIgnoreCase(colourName);
+    public List<AllCardResponse> getCardsByColour(String colourName) {
+        return repository.findByCardColour_ColourIgnoreCase(colourName).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
-    public List<AllCard> getCardByName(String cardName){
-        return repository.findByCardName_CardNameIgnoreCase(cardName);
+    public List<AllCardResponse> getCardByName(String cardName){
+        return repository.findByCardName_CardNameIgnoreCase(cardName).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     public List<AllCardResponse> searchCards(UserCardFilterRequest filter){
@@ -104,14 +95,15 @@ public class AllCardService {
             card.isAlternative(), 
             card.getCardType().getId(),
             card.getCardColour().getId(),
-            card.getIsToken(), 
+            card.getIsToken(),
             card.getCollectorNumber(), 
             card.getCardPrice(),
             card.getEnergy(),
             card.getMight(),
             card.getPower(),
-            card.getSubType().getId(),
-            card.isSignature()
+            card.getSubType(), 
+            card.isSignature(),
+            card.getSuperType().getId()
         );
     }
 }

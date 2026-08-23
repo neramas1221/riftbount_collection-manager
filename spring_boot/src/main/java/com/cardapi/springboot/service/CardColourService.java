@@ -10,13 +10,12 @@ import com.cardapi.springboot.dto.CardColourResponse;
 import com.cardapi.springboot.entity.CardColour;
 import com.cardapi.springboot.repository.CardColourRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CardColourService {
     private final CardColourRepository repository;
-
-    public CardColourService(CardColourRepository repository){
-        this.repository = repository;
-    }
 
     public List<CardColourResponse> getAllCardColours() {
         return repository.findAll().stream()

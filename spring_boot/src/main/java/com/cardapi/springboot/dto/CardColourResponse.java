@@ -1,15 +1,17 @@
 package com.cardapi.springboot.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CardColourResponse {
     private Integer id;
     private String colour;
-
-    public CardColourResponse(Integer id, String colour){
-        this.id = id;
-        this.colour = colour;
-    }
-
-    public Integer getId(){return id;}
-
-    public String getColour(){return colour;}
 }

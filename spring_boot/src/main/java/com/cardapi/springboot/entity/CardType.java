@@ -1,16 +1,18 @@
 package com.cardapi.springboot.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name="card_types")
-@Setter
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CardType {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

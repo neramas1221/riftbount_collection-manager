@@ -1,6 +1,7 @@
 package com.cardapi.springboot.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CardSet {
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)

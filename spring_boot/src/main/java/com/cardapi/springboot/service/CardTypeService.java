@@ -4,18 +4,18 @@ import com.cardapi.springboot.dto.CardTypeResponse;
 import com.cardapi.springboot.dto.CardTypeRequest;
 import com.cardapi.springboot.entity.CardType;
 import com.cardapi.springboot.repository.CardTypeRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CardTypeService {
     private final CardTypeRepository repository;
-
-    public CardTypeService(CardTypeRepository repository){
-        this.repository = repository;
-    }
 
     public List<CardTypeResponse> getAllCardType(){
         return repository.findAll().stream()

@@ -1,13 +1,13 @@
 package com.cardapi.springboot.repository;
 
-import com.cardapi.springboot.entity.CardSet;
-
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.cardapi.springboot.entity.SuperType;
+
 @Repository
-public interface CardSetRepository extends JpaRepository<CardSet, Integer>{
-    Optional<CardSet> findByCardSet(String cardSet);
+public interface SuperTypeRepository extends JpaRepository<SuperType, Integer>{
+    Optional<SuperType> findByName(String name);
 }

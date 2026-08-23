@@ -1,10 +1,16 @@
 package com.cardapi.springboot.entity;
 
+import java.util.List;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 
 @Entity
 @Table(name="all_cards")
@@ -12,10 +18,11 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AllCard {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private int id;
 
     @Column(nullable = false)
     private String cardName;
@@ -39,7 +46,7 @@ public class AllCard {
     private CardColour cardColour;
 
     @Column(name = "is_token", nullable = false)
-    private Integer isToken;
+    private int isToken;
 
     @Column(name = "collector_number", nullable = false)
     private String collectorNumber;
@@ -48,19 +55,22 @@ public class AllCard {
     private float cardPrice;
 
     @Column(name = "energy", nullable = true)
-    private Integer energy;
+    private int energy;
 
     @Column(name = "might", nullable = true)
-    private Integer might;
+    private int might;
 
     @Column(name = "power", nullable = true)
-    private Integer power;
+    private int power;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "subtype_id", nullable = false)
-    private SubType subType;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private List<String> subType;
 
     @Column(name = "is_signiture", nullable = false)
     private boolean isSignature;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "super_type_id", nullable = true)
+    private SuperType superType;
 }

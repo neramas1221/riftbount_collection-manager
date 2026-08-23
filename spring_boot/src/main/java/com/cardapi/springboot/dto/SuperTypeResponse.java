@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CardSetResponse {
-    private Integer id;
-    private String setName;
+public class SuperTypeResponse {
+    private int id;
+    private String superType;
 }

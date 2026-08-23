@@ -4,18 +4,18 @@ import com.cardapi.springboot.dto.CardSetResponse;
 import com.cardapi.springboot.dto.CardSetRequest;
 import com.cardapi.springboot.entity.CardSet;
 import com.cardapi.springboot.repository.CardSetRepository;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CardSetService {
     private final CardSetRepository repository;
-
-    public CardSetService(CardSetRepository repository){
-        this.repository = repository;
-    }
 
     public List<CardSetResponse> getAllCardSets() {
         return repository.findAll().stream()
@@ -25,7 +25,7 @@ public class CardSetService {
 
     public CardSetResponse createCardSet(CardSetRequest request) {
         CardSet newCardSet = new CardSet();
-        newCardSet.setSetName(request.getSet());
+        newCardSet.setSetName(request.getSetName());
 
         CardSet savedCardSet = repository.save(newCardSet);
 
