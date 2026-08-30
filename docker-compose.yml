@@ -1,0 +1,84 @@
+services:
+  database:
+    image: postgres:16
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: card_db
+      POSTGRES_USER: card_user
+      POSTGRES_PASSWORD: card_password
+    
+    networks:
+      card_net:
+        aliases:
+          - card_db
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U card_user -d card_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+
+  flyway:
+    image: flyway/flyway:latest
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://database:5432/card_db
+      FLYWAY_USER: card_user
+      FLYWAY_PASSWORD: card_password
+    volumes:
+      - ./db/migration:/flyway/sql
+    networks:
+      - card_net
+    depends_on:
+      database:
+        condition: service_healthy
+
+  card-api:
+    build: spring_boot/.
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://card_db:5432/card_db
+      SPRING_DATASOURCE_USERNAME: card_user
+      SPRING_DATASOURCE_PASSWORD: card_password
+    networks:
+      - card_net
+    depends_on:
+      database:
+        condition: service_healthy
+      flyway:
+        condition: service_completed_successfully
+
+  collectors:
+    build: webscrapper/.
+    volumes:
+      - ./webscrapper:/workspace
+    networks:
+      - card_net
+    depends_on:
+      - card-api
+    restart: unless-stopped
+
+  webapp:
+    build: webapp/.
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - card_net
+    depends_on:
+      - card-api
+
+networks:
+  card_net:
+    name: card_net
+    external: false
+
+volumes:
+  pgdata:
