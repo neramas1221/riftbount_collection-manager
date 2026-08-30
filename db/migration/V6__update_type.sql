@@ -1,0 +1,2 @@
+ALTER TABLE all_cards 
+ALTER COLUMN is_signature TYPE BOOLEAN;

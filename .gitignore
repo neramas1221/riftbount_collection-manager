@@ -1,1 +1,12 @@
 *.ps1
+card_price_collectors/storage_state.json
+card_price_collectors/debug/
+card_price_collectors/output_*.csv
+card_price_collectors/output_*.json
+webscrapper/datasets
+CLAUDE.md
+.vscode
+.claude
+*__pycache__
+*.csv
+webscrapper/card_price_collectors/*.json
