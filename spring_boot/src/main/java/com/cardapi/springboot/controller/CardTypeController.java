@@ -26,4 +26,9 @@ public class CardTypeController {
     public CardTypeResponse create(@RequestBody CardTypeRequest request) {
         return service.createCardType(request);
     }
+
+    @GetMapping("/{cardType}")
+    public Integer getCardTypeByName(@PathVariable String cardType){
+        return service.getCardTypeByName(cardType);
+    }
 }

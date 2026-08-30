@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,9 +36,7 @@ public class SuperTypeController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<SuperTypeResponse> create(@PathVariable SuperTypeRequest request){
-        SuperTypeResponse created = service.createSuperType(request);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public SuperTypeResponse create(@RequestBody SuperTypeRequest request){
+        return service.createSuperType(request);
     }
 }

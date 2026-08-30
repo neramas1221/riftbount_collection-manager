@@ -55,22 +55,33 @@ public class AllCard {
     private float cardPrice;
 
     @Column(name = "energy", nullable = true)
-    private int energy;
+    private Integer energy;
 
     @Column(name = "might", nullable = true)
-    private int might;
+    private Integer might;
 
     @Column(name = "power", nullable = true)
-    private int power;
+    private Integer power;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.ARRAY) 
+    @Column(name = "subtypes", columnDefinition = "text[]") 
     private List<String> subType;
 
-    @Column(name = "is_signiture", nullable = false)
+    @Column(name = "is_signature", nullable = false)
     private boolean isSignature;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "super_type_id", nullable = true)
     private SuperType superType;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    // need to change to false later
+    @JoinColumn(name = "rarity_id", nullable = true)
+    private CardRarity cardRarity;
+
+    @Column(name = "card_image_url", nullable = true)
+    private String cardImageUrl;
+
+    @Column(name="riftbound_id", nullable = true)
+    private String riftBoundId;
 }

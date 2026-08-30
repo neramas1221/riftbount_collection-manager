@@ -15,28 +15,40 @@ public class AllCardSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (filter.getCardEnergy() != null && !filter.getCardEnergy().isEmpty()){
-                predicates.add(root.get("energy").in(filter.getCardEnergy()));
+            if (filter.getCardEnergyMin() != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("energy"), filter.getCardEnergyMin()));
+            }
+
+            if (filter.getCardEnergyMax() != null){
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("energy"), filter.getCardEnergyMax()));
+            }
+
+            if (filter.getCardTypes() != null && !filter.getCardTypes().isEmpty()){
+                predicates.add(root.join("cardType").get("type").in(filter.getCardTypes()));
             }
 
             if (filter.getCardSets() != null && !filter.getCardSets().isEmpty()){
-                predicates.add(root.join("cardType").get("name").in(filter.getCardTypes()));
-            }
-
-            if (filter.getCardSets() != null && !filter.getCardSets().isEmpty()){
-                predicates.add(root.join("cardSet").get("name").in(filter.getCardSets()));
+                predicates.add(root.join("cardSet").get("setName").in(filter.getCardSets()));
             }
             
             if (filter.getCardColours() != null && !filter.getCardColours().isEmpty()){
-                predicates.add(root.join("cardColour").get("name").in(filter.getCardSets()));
+                predicates.add(root.join("cardColour").get("colour").in(filter.getCardColours()));
             }
 
-            if (filter.getCardMight() != null && !filter.getCardMight().isEmpty()){
-                predicates.add(root.get("might").in(filter.getCardMight()));
+            if (filter.getCardMightMin() != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("might"), filter.getCardMightMin()));
             }
 
-            if (filter.getCardPower() != null && !filter.getCardPower().isEmpty()){
-                predicates.add(root.get("power").in(filter.getCardPower()));
+            if (filter.getCardMightMax() != null){
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("might"), filter.getCardMightMax()));
+            }
+
+            if (filter.getCardPowerMin() != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get( "power"), filter.getCardPowerMin()));
+            }
+            
+            if (filter.getCardPowerMax() != null){
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get( "power"), filter.getCardPowerMax()));
             }
 
             if (filter.getIsOverNumbered() != null){

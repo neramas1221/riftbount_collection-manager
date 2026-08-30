@@ -16,17 +16,20 @@ import lombok.Setter;
 public class AllCardRequest {
     private String cardName;
     private int cardSet;
-    private boolean overNumered;
-    private boolean alternative;
+    private boolean isOverNumbered;
+    private boolean isAlternative;
     private int cardType;
     private int cardColour;
     private int isToken;
     private String collectorNumber;
     private float cardPrice;
-    private int energy;
-    private int might;
-    private int power;
+    private Integer energy;
+    private Integer might;
+    private Integer power;
     private List<String> subType;
-    private boolean signature;
-    private int superType;
+    private boolean isSignature;
+    private Integer superType;
+    private Integer cardRarity; 
+    private String cardImageUrl;
+    private String riftBoundId;
 }

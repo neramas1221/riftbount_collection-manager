@@ -24,10 +24,13 @@ public class AllCardResponse {
     private int isToken;
     private String collectorNumber;
     private float cardPrice;
-    private int energy;
-    private int might;
-    private int power;
+    private Integer energy;
+    private Integer might;
+    private Integer power;
     private List<String> subType;
-    private Boolean isSignature;
-    private int superType;
+    private boolean isSignature;
+    private Integer superType;
+    private Integer cardRarity; 
+    private String cardImageUrl;
+    private String riftBoundId;
 }

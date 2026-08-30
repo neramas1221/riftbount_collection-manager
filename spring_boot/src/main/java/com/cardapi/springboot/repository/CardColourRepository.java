@@ -11,5 +11,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CardColourRepository extends JpaRepository<CardColour, Integer> {
 
     Optional<CardColour> findByColour(String colour);
-    
+    Optional<CardColour> findByColourIgnoreCase(String colour);
 }

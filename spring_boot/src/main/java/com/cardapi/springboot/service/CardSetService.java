@@ -8,6 +8,8 @@ import com.cardapi.springboot.repository.CardSetRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,16 +21,46 @@ public class CardSetService {
 
     public List<CardSetResponse> getAllCardSets() {
         return repository.findAll().stream()
-            .map(set -> new CardSetResponse(set.getId(), set.getSetName()))
+            .map(this::mapToResponse)
             .collect(Collectors.toList());
     }
 
     public CardSetResponse createCardSet(CardSetRequest request) {
-        CardSet newCardSet = new CardSet();
-        newCardSet.setSetName(request.getSetName());
+        CardSet existingCardSet = repository.findBySetNameIgnoreCase(request.getSetName()).orElse(null);
+        
+        if (existingCardSet != null){
+            return mapToResponse(existingCardSet);
+        }
+
+        CardSet newCardSet = CardSet.builder()
+                            .setName(request.getSetName())
+                            .totalCollectorNum(request.getTotalCollectorNum())
+                            .cardMarketId(request.getCardMarketId())
+                            .build();
 
         CardSet savedCardSet = repository.save(newCardSet);
 
-        return new CardSetResponse(savedCardSet.getId(), savedCardSet.getSetName());
+        return mapToResponse(savedCardSet);
+    }
+
+    public Integer getCardSetByName(String cardSet){
+        return repository.findBySetNameIgnoreCase(cardSet)
+                         .map(CardSet::getId)
+                         .orElseThrow(() -> new RuntimeException("Couldnt find cardset: " + cardSet));
+    }
+
+    public void updateCardMarketId(@PathVariable String setName, @RequestParam List<Integer> id){
+        CardSet set = repository.findBySetNameIgnoreCase(setName).orElseThrow(() -> new RuntimeException("Set not found"));
+        set.setCardMarketId(id);
+        repository.save(set);
+    }
+
+    private CardSetResponse mapToResponse(CardSet entity){
+        return CardSetResponse.builder()
+                .id(entity.getId())
+                .setName(entity.getSetName())
+                .totalCollectorNum(entity.getTotalCollectorNum())
+                .cardMarketId(entity.getCardMarketId())
+                .build();
     }
 }

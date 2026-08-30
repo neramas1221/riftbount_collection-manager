@@ -24,11 +24,30 @@ public class CardTypeService {
     }
 
     public CardTypeResponse createCardType(CardTypeRequest request) {
-        CardType newCardType = new CardType();
-        newCardType.setType(request.getType());
+        CardType existingCardType = repository.findByTypeIgnoreCase(request.getType()).orElse(null);
+        if (existingCardType != null){
+            return mapToResponse(existingCardType);
+        }
 
-        CardType savedCard = repository.save(newCardType);
+        CardType newCardType = CardType.builder()
+                                .type(request.getType())
+                                .build();
 
-        return new CardTypeResponse(savedCard.getId(), savedCard.getType());
+        CardType savedCardType = repository.save(newCardType);
+
+        return mapToResponse(savedCardType);
+    }
+
+    public Integer getCardTypeByName(String cardType){
+        return repository.findByTypeIgnoreCase(cardType)
+                            .map(CardType::getId)
+                            .orElseThrow(() -> new RuntimeException("Could not find card type: " + cardType));
+    }
+
+    private CardTypeResponse mapToResponse(CardType entity){
+        return CardTypeResponse.builder()
+                .id(entity.getId())
+                .type(entity.getType())
+                .build();
     }
 }

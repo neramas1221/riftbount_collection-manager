@@ -1,6 +1,6 @@
 package com.cardapi.springboot.dto;
 
-import java.util.List;
+import java.time.LocalDate;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,9 +13,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CardSetResponse {
+public class HistoricCardPriceResponse {
     private Integer id;
-    private String setName;
-    private Integer totalCollectorNum;
-    private List<Integer> cardMarketId;
+    private Integer cardId;
+    private LocalDate recordDate;
+    private float cardPrice;
+    private float avg7D;
+    private float avg30;
+    private float trend;
 }

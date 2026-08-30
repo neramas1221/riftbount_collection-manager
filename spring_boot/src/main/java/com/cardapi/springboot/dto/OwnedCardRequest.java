@@ -1,7 +1,5 @@
 package com.cardapi.springboot.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CardSetRequest {
-    private String setName;
-    private Integer totalCollectorNum;
-    private List<Integer> cardMarketId;
+public class OwnedCardRequest {
+    private int allCardId;
+    private int quantity;
 }

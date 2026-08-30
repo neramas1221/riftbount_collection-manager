@@ -10,4 +10,5 @@ import com.cardapi.springboot.entity.SuperType;
 @Repository
 public interface SuperTypeRepository extends JpaRepository<SuperType, Integer>{
     Optional<SuperType> findByName(String name);
+    Optional<SuperType> findByNameIgnoreCase(String name);
 }

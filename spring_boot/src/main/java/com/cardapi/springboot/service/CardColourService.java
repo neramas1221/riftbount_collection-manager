@@ -24,18 +24,38 @@ public class CardColourService {
     }
 
     public CardColourResponse createCardColour(CardColourRequest request) {
-        CardColour newCardColour = new CardColour();
-        newCardColour.setColour(request.getColour());
+        CardColour existingColour = repository.findByColourIgnoreCase(request.getColour()).orElse(null);
+
+        if (existingColour != null){
+            return mapToResponse(existingColour);
+        }
+
+        CardColour newCardColour = CardColour.builder()
+                                    .colour(request.getColour())
+                                    .build();
 
         CardColour savedCardColour = repository.save(newCardColour);
 
-        return new CardColourResponse(savedCardColour.getId(), savedCardColour.getColour());
+        return mapToResponse(savedCardColour);
     }
 
     public Integer getColourIdByName(String colourName){
-        CardColour foundColour = repository.findByColour(colourName)
+        CardColour foundColour = repository.findByColourIgnoreCase(colourName)
             .orElseThrow(() -> new RuntimeException("Couldnt find colour:" + colourName));
         
             return foundColour.getId();
+    }
+
+    public Integer getColourByName(String colourName){
+        return repository.findByColourIgnoreCase(colourName)
+               .map(CardColour::getId)
+               .orElseThrow(() -> new RuntimeException("Couldnt find colour: " + colourName));
+    }
+
+    private CardColourResponse mapToResponse(CardColour entity){
+        return CardColourResponse.builder()
+                .id(entity.getId())
+                .colour(entity.getColour())
+                .build();
     }
 }

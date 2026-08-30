@@ -29,12 +29,15 @@ public class SuperTypeService {
     }
 
     public SuperTypeResponse createSuperType(SuperTypeRequest request){
-        if(repository.findByName(request.getSuperTypeName()).isPresent()) {
-            throw new RuntimeException("A supertype with that name already exists");
+        SuperType existingSuperType = repository.findByNameIgnoreCase(request.getSuperTypeName()).orElse(null);
+        
+        if (existingSuperType != null){
+            return mapToResponse(existingSuperType);
         }
+        
         SuperType entity = SuperType.builder()
-        .name(request.getSuperTypeName())
-        .build();
+                            .name(request.getSuperTypeName())
+                            .build();
         SuperType savedEntity = repository.save(entity);
         return mapToResponse(savedEntity);
     }

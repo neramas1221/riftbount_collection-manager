@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CardSetRepository extends JpaRepository<CardSet, Integer>{
-    Optional<CardSet> findByCardSet(String cardSet);
+    Optional<CardSet> findBySetName(String setName);
+    Optional<CardSet> findBySetNameIgnoreCase(String setName);
 }
