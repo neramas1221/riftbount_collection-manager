@@ -1,0 +1,77 @@
+<!--
+  App shell: a fixed-height (h-screen) flex row of [sidebar nav][routed page content], with the
+  card detail modal floating on top of everything. This template never changes between pages —
+  only whatever <router-outlet> renders inside <main> does.
+-->
+<div class="flex h-screen w-screen overflow-hidden bg-[var(--color-surface-0)] text-[var(--color-text-primary)]">
+  <aside
+    class="flex w-60 shrink-0 flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]"
+  >
+    <div class="flex items-center gap-2 border-b border-[var(--color-border-subtle)] px-5 py-4">
+      <div
+        class="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--color-accent)] text-sm font-bold text-white"
+      >
+        RB
+      </div>
+      <div>
+        <p class="text-sm font-semibold leading-tight">RiftDex</p>
+        <p class="text-xs leading-tight text-[var(--color-text-muted)]">A riftbound collection manager</p>
+      </div>
+    </div>
+
+    <nav class="flex flex-1 flex-col gap-1 p-3">
+      <!--
+        @for is Angular's newer control-flow syntax (replaces *ngFor from older Angular).
+        `track item.path` tells Angular how to match items across re-renders so it can reuse
+        existing DOM nodes instead of destroying/recreating them — required, not optional,
+        and should be a unique, stable value per item (an array index would defeat the point).
+      -->
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-[var(--color-surface-3)] text-[var(--color-text-primary)]"
+          [routerLinkActiveOptions]="{ exact: false }"
+          class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]"
+        >
+          <!-- Icons are drawn as inline SVG paths (from navItems[].icon) rather than an <img>
+               or icon font, so they inherit `currentColor` and recolor automatically with the
+               surrounding text on hover/active, no separate icon assets needed. -->
+          <svg
+            class="h-4.5 w-4.5 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path [attr.d]="item.icon" />
+          </svg>
+          <span class="flex flex-col">
+            <span>{{ item.label }}</span>
+            <span class="text-xs font-normal text-[var(--color-text-muted)] group-hover:text-[var(--color-text-secondary)]">{{
+              item.description
+            }}</span>
+          </span>
+        </a>
+      }
+    </nav>
+
+    <div class="border-t border-[var(--color-border-subtle)] px-4 py-3 text-xs text-[var(--color-text-muted)]">
+      Local instance &middot; API on :8080
+    </div>
+  </aside>
+
+  <!-- min-h-0 here matters more than it looks: without it, this flex child refuses to shrink
+       below its content's natural height, so the page below never gets a bounded height to
+       scroll within — see the pages' own root divs for the matching half of this fix. -->
+  <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <!-- Whichever routed component matches the current URL (see app.routes.ts) renders here. -->
+    <router-outlet />
+  </main>
+
+  <!-- Always present in the DOM but renders nothing until a card is opened (see
+       CardDetailModalService.activeCardId) — mounting it once here, rather than per-page, is
+       what lets it overlay whichever page is currently showing. -->
+  <app-card-detail-modal />
+</div>

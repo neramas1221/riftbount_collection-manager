@@ -1,0 +1,194 @@
+<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+  <header class="border-b border-[var(--color-border-subtle)] px-8 py-5">
+    <h1 class="text-lg font-semibold">Card Database</h1>
+    <p class="text-sm text-[var(--color-text-secondary)]">Search & filter every card.</p>
+  </header>
+
+  <!-- Always-visible filter row: name search + Set/Colour dropdowns + the "More filters" toggle.
+       There's no Search button anywhere on this page — every input here writes straight to a
+       signal, and the component's filterRequest computed (+ debounce) reacts automatically. -->
+  <div class="flex flex-col gap-3 border-b border-[var(--color-border-subtle)] px-8 py-4">
+    <div class="flex flex-wrap items-center gap-3">
+      <input
+        class="input-field !w-64"
+        type="text"
+        placeholder="Search card name..."
+        [ngModel]="nameFilter()"
+        (ngModelChange)="nameFilter.set($event)"
+      />
+      <app-multi-select-dropdown label="Set" [options]="setOptions()" [selected]="selectedSets()" (toggleOption)="toggleSet($event)" />
+      @if (showColourFilter()) {
+        <app-multi-select-dropdown label="Colour" [options]="colourOptions()" [selected]="selectedBaseColours()" [max]="2" (toggleOption)="toggleColour($event)" />
+      }
+      <button type="button" class="btn-secondary" (click)="moreFiltersOpen.set(!moreFiltersOpen())">
+        More filters
+        @if (moreFiltersCount() > 0) { <span class="text-[var(--color-accent)]">({{ moreFiltersCount() }})</span> }
+        {{ moreFiltersOpen() ? '▲' : '▼' }}
+      </button>
+      @if (totalFilterCount() > 0) {
+        <button type="button" class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" (click)="clearFilters()">
+          Clear all ({{ totalFilterCount() }})
+        </button>
+      }
+    </div>
+
+    <!-- Subtype filtering has no dedicated control anywhere on this page — the ONLY way to set
+         one is clicking a tag in the card detail modal (see goToFilter('subtype', ...) there).
+         This pill is what makes an otherwise-invisible active filter visible and removable. -->
+    @if (filterSubtype()) {
+      <div class="flex items-center gap-2 text-xs">
+        <span class="text-[var(--color-text-muted)]">Filtered by tag:</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-accent)]/20 px-2.5 py-1 text-[var(--color-text-primary)]">
+          {{ filterSubtype() }}
+          <button type="button" class="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" (click)="filterSubtype.set(null)">&times;</button>
+        </span>
+      </div>
+    }
+
+    <!-- The less-common filters, collapsed by default — only rendered at all while
+         moreFiltersOpen() is true (an @if, not a CSS "hidden" class, so this content doesn't
+         even exist in the DOM until expanded). -->
+    @if (moreFiltersOpen()) {
+      <div class="grid grid-cols-1 gap-4 rounded-lg border border-[var(--color-border-subtle)] px-4 py-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div>
+          <h3 class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Type</h3>
+          <div class="flex flex-wrap gap-1.5">
+            @for (type of refData.cardTypes(); track type.id) {
+              <button
+                type="button"
+                class="rounded-full border px-2.5 py-1 text-xs transition-colors"
+                [class]="selectedTypes().has(type.type) ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]' : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)]'"
+                (click)="toggleType(type.type)"
+              >
+                {{ type.type }}
+              </button>
+            }
+          </div>
+          @if (battlefieldSelected()) {
+            <p class="mt-2 text-xs text-[var(--color-text-muted)]">Battlefield selected — colour, energy, might & power are hidden.</p>
+          } @else if (spellSelected()) {
+            <p class="mt-2 text-xs text-[var(--color-text-muted)]">Spell selected — might is hidden.</p>
+          }
+        </div>
+
+        <div>
+          <h3 class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Rarity</h3>
+          <div class="flex flex-wrap gap-1.5">
+            @for (rarity of refData.cardRarities(); track rarity.id) {
+              <button
+                type="button"
+                class="rounded-full border px-2.5 py-1 text-xs transition-colors"
+                [class]="filterRarityName() === rarity.rarity ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/20 text-[var(--color-text-primary)]' : 'border-[var(--color-border-subtle)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)]'"
+                (click)="toggleRarity(rarity.rarity)"
+              >
+                {{ rarity.rarity }}
+              </button>
+            }
+          </div>
+        </div>
+
+        @if (showEnergyFilter() || showMightFilter() || showPowerFilter()) {
+          <div>
+            <h3 class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Energy / Might / Power</h3>
+            <!-- Each range is two plain number inputs writing back into the SAME NumericRange
+                 signal — e.g. the Min box's (ngModelChange) rebuilds the object keeping the
+                 existing `max`, so typing in one field never clobbers the other. -->
+            <div class="flex flex-col gap-2">
+              @if (showEnergyFilter()) {
+                <div class="flex items-center gap-1.5">
+                  <span class="w-14 text-xs text-[var(--color-text-secondary)]">Energy</span>
+                  <input class="input-field !w-16" type="number" placeholder="Min" [ngModel]="energyRange().min" (ngModelChange)="energyRange.set({ min: $event, max: energyRange().max })" />
+                  <input class="input-field !w-16" type="number" placeholder="Max" [ngModel]="energyRange().max" (ngModelChange)="energyRange.set({ min: energyRange().min, max: $event })" />
+                </div>
+              }
+              @if (showMightFilter()) {
+                <div class="flex items-center gap-1.5">
+                  <span class="w-14 text-xs text-[var(--color-text-secondary)]">Might</span>
+                  <input class="input-field !w-16" type="number" placeholder="Min" [ngModel]="mightRange().min" (ngModelChange)="mightRange.set({ min: $event, max: mightRange().max })" />
+                  <input class="input-field !w-16" type="number" placeholder="Max" [ngModel]="mightRange().max" (ngModelChange)="mightRange.set({ min: mightRange().min, max: $event })" />
+                </div>
+              }
+              @if (showPowerFilter()) {
+                <div class="flex items-center gap-1.5">
+                  <span class="w-14 text-xs text-[var(--color-text-secondary)]">Power</span>
+                  <input class="input-field !w-16" type="number" placeholder="Min" [ngModel]="powerRange().min" (ngModelChange)="powerRange.set({ min: $event, max: powerRange().max })" />
+                  <input class="input-field !w-16" type="number" placeholder="Max" [ngModel]="powerRange().max" (ngModelChange)="powerRange.set({ min: powerRange().min, max: $event })" />
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div>
+          <h3 class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Printing flags</h3>
+          <!-- Four independent tri-state (Any/Yes/No) dropdowns, one per boolean flag on a card. -->
+          <div class="flex flex-col gap-2 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--color-text-secondary)]">Over-numbered</span>
+              <select class="input-field !w-24" [ngModel]="overNumberedFilter()" (ngModelChange)="overNumberedFilter.set($event)">
+                <option value="any">Any</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--color-text-secondary)]">Alt art</span>
+              <select class="input-field !w-24" [ngModel]="alternativeFilter()" (ngModelChange)="alternativeFilter.set($event)">
+                <option value="any">Any</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--color-text-secondary)]">Signature</span>
+              <select class="input-field !w-24" [ngModel]="signatureFilter()" (ngModelChange)="signatureFilter.set($event)">
+                <option value="any">Any</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-[var(--color-text-secondary)]">Token</span>
+              <select class="input-field !w-24" [ngModel]="tokenFilter()" (ngModelChange)="tokenFilter.set($event)">
+                <option value="any">Any</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <section #cardGrid class="flex-1 overflow-y-auto px-8 py-6">
+    @if (loadError()) {
+      <div class="panel mb-6 border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        {{ loadError() }}
+      </div>
+    }
+
+    @if (loading()) {
+      <p class="text-sm text-[var(--color-text-muted)]">Loading cards...</p>
+    } @else {
+      <p class="mb-4 text-sm text-[var(--color-text-muted)]">{{ filteredCards().length }} of {{ allCardStore.cards().length }} cards</p>
+
+      <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
+        @for (card of filteredCards(); track card.id) {
+          <button type="button" class="group flex flex-col gap-1.5 text-left" (click)="openCard(card.id)">
+            <div class="relative">
+              <app-card-image [card]="card" [owned]="ownedQuantity(card.id) > 0" />
+              @if (ownedQuantity(card.id) > 0) {
+                <span class="absolute right-1 top-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  &times;{{ ownedQuantity(card.id) }}
+                </span>
+              }
+            </div>
+            <p class="truncate text-xs font-medium leading-snug group-hover:text-[var(--color-accent-hover)]">{{ card.cardName }}</p>
+            <p class="text-[10px] text-[var(--color-text-muted)]">{{ card.setName }}</p>
+          </button>
+        }
+      </div>
+    }
+  </section>
+</div>

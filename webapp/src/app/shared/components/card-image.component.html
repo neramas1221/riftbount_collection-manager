@@ -1,0 +1,26 @@
+<!-- aspect-[5/7] fixes every card to the same portrait shape regardless of the actual image's
+     real dimensions — `overflow-hidden` is what lets a rotated/oversized battlefield image (see
+     imageSizingClass()) get cropped down to fit this box instead of spilling outside it.
+     The ring-* classes draw a subtle accent-coloured border on hover — but only when an
+     ANCESTOR has class="group" (a plain Tailwind convention), since `group-hover:` reacts to
+     hovering the ancestor, not this element itself. -->
+<div class="relative aspect-[5/7] w-full overflow-hidden rounded-lg bg-[var(--color-surface-3)] ring-2 ring-transparent transition-all duration-150 group-hover:ring-[var(--color-accent)]">
+  @if (card().cardImageUrl) {
+    <img
+      [src]="card().cardImageUrl"
+      [alt]="card().cardName"
+      loading="lazy"
+      class="transition-all duration-150"
+      [class]="imageSizingClass() + ' ' + dimmingClass()"
+    />
+  } @else {
+    <!-- No image URL for this card — show its initials on a plain tinted panel instead of a
+         broken <img>. -->
+    <div
+      class="flex h-full w-full items-center justify-center p-2 text-center text-lg font-semibold text-[var(--color-text-muted)] transition-all duration-150"
+      [class]="dimmingClass()"
+    >
+      {{ initials() }}
+    </div>
+  }
+</div>

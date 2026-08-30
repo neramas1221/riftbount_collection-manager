@@ -1,0 +1,218 @@
+<!-- min-h-0 on this root div (paired with `host: { class: 'contents' }` in the .ts file) is what
+     lets #scrollArea below actually get a bounded height to scroll within — see app.html for
+     the rest of this explanation. -->
+<div class="flex min-h-0 flex-1 flex-col overflow-hidden">
+  <header class="border-b border-[var(--color-border-subtle)] px-8 py-5">
+    <h1 class="text-lg font-semibold">Collection Explorer</h1>
+    <p class="text-sm text-[var(--color-text-secondary)]">Track the cards you own and their current value.</p>
+  </header>
+
+  <!-- The only element in this page that actually scrolls — the header above stays fixed. -->
+  <div #scrollArea class="flex-1 overflow-y-auto px-8 py-6">
+    @if (refData.loadError() || allCardStore.loadError() || ownedCardStore.loadError()) {
+      <div class="panel mb-6 border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        Could not reach the Spring Boot API on :8080. Is it running?
+      </div>
+    }
+
+    @if (loading()) {
+      <p class="text-sm text-[var(--color-text-muted)]">Loading collection...</p>
+    } @else {
+      <!-- Stat tiles -->
+      <div class="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="panel px-5 py-4">
+          <p class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Unique cards</p>
+          <p class="mt-1 text-2xl font-semibold">{{ stats.totalUniqueOwned() }}</p>
+        </div>
+        <div class="panel px-5 py-4">
+          <p class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Total copies</p>
+          <p class="mt-1 text-2xl font-semibold">{{ stats.totalCopiesOwned() }}</p>
+        </div>
+        <div class="panel px-5 py-4">
+          <p class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Estimated value</p>
+          <p class="mt-1 text-2xl font-semibold text-[var(--color-gold)]">{{ stats.totalValue() | number: '1.2-2' }}</p>
+        </div>
+        <div class="panel px-5 py-4">
+          <p class="text-xs uppercase tracking-wide text-[var(--color-text-muted)]">Completion</p>
+          <p class="mt-1 text-2xl font-semibold">{{ stats.completionPct() | number: '1.1-1' }}%</p>
+        </div>
+      </div>
+
+      <!-- Breakdown panels — each renders a list of app-stat-bar rows built from
+           CollectionStatsService; clicking one calls back into this component to toggle the
+           matching filter, which then narrows the table further down the page. -->
+      <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="panel px-5 py-4">
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Sets</h2>
+          <div class="flex flex-col gap-1">
+            @for (row of stats.bySet(); track row.name) {
+              <app-stat-bar
+                [name]="row.name"
+                [displayName]="displaySetName(row.name)"
+                [owned]="row.owned"
+                [total]="row.total"
+                [active]="filterSetName() === row.name"
+                (rowClick)="toggleSetFilter(row.name)"
+              />
+            }
+          </div>
+        </div>
+
+        <div class="panel px-5 py-4">
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Rarity</h2>
+          <div class="flex flex-col gap-1">
+            @for (row of stats.byRarity(); track row.name) {
+              <app-stat-bar
+                [name]="row.name"
+                [owned]="row.owned"
+                [total]="row.total"
+                iconKind="rarity"
+                [active]="filterRarityName() === row.name"
+                (rowClick)="toggleRarityFilter(row.name)"
+              />
+            }
+          </div>
+        </div>
+
+        <div class="panel px-5 py-4">
+          <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Elements</h2>
+          <div class="flex flex-col gap-1">
+            @for (row of stats.byColour(); track row.name) {
+              <app-stat-bar
+                [name]="row.name"
+                [owned]="row.owned"
+                [total]="row.total"
+                iconKind="colour"
+                [active]="filterColours().has(row.name)"
+                (rowClick)="toggleColourFilter(row.name)"
+              />
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Add to collection: a typeahead search box. [ngModel]/(ngModelChange) (rather than a
+           two-way [(ngModel)]) is the pattern used everywhere in this app for signal-backed
+           inputs — [ngModel] reads the signal's current value, (ngModelChange) writes back to
+           it, but it's two explicit one-way bindings rather than Angular's shorthand banana-in-
+           a-box syntax, because [(ngModel)] expects a plain mutable property, not a signal. -->
+      <div class="panel relative mb-6 px-4 py-3">
+        <label class="mb-1.5 block text-xs font-medium text-[var(--color-text-secondary)]">Add a card to your collection</label>
+        <input
+          class="input-field"
+          type="text"
+          placeholder="Search by card name..."
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+        />
+
+        @if (searchResults().length > 0) {
+          <ul class="absolute left-4 right-4 top-full z-10 mt-1 max-h-72 overflow-y-auto rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-2)] shadow-xl">
+            @for (card of searchResults(); track card.id) {
+              <li>
+                <button
+                  type="button"
+                  class="flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-[var(--color-surface-3)]"
+                  (click)="addToCollection(card)"
+                >
+                  <span>
+                    <span class="font-medium">{{ card.cardName }}</span>
+                    <span class="ml-2 text-xs text-[var(--color-text-muted)]">{{ card.setName }} &middot; {{ card.colourName }}</span>
+                  </span>
+                  <span class="btn-primary !px-2 !py-1 text-xs">+ Add</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <!-- Table filter bar -->
+      <div class="mb-4 flex flex-wrap items-center gap-3">
+        <input
+          class="input-field !w-56"
+          type="text"
+          placeholder="Filter your collection..."
+          [ngModel]="tableNameFilter()"
+          (ngModelChange)="tableNameFilter.set($event)"
+        />
+        <!-- [ngValue] (not [value]) binds the actual JS value `set.setName` to each <option> —
+             plain [value] would coerce it to a string, which happens to be fine here since it's
+             already a string, but [ngValue] is the correct binding for ngModel-driven <select>s
+             in general (e.g. if these options held numbers or objects instead). -->
+        <select
+          class="input-field !w-48"
+          [ngModel]="filterSetName()"
+          (ngModelChange)="filterSetName.set($event)"
+        >
+          <option [ngValue]="null">All sets</option>
+          @for (set of refData.cardSets(); track set.id) {
+            <option [ngValue]="set.setName">{{ set.setName }}</option>
+          }
+        </select>
+        @if (tableNameFilter() || filterColours().size || filterRarityName() || filterSetName()) {
+          <button type="button" class="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" (click)="clearTableFilters()">
+            Clear filters
+          </button>
+        }
+      </div>
+
+      @if (filteredOwnedRows().length === 0) {
+        <div class="panel px-6 py-10 text-center text-sm text-[var(--color-text-secondary)]">
+          @if (stats.totalUniqueOwned() === 0) {
+            No cards in your collection yet — search above to add your first one.
+          } @else {
+            No owned cards match these filters.
+          }
+        </div>
+      } @else {
+        <div class="panel overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-[var(--color-border-subtle)] text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
+                <th class="px-4 py-3 font-medium" colspan="2">Card</th>
+                <th class="px-4 py-3 font-medium">Set</th>
+                <th class="px-4 py-3 font-medium">Colour</th>
+                <th class="px-4 py-3 text-right font-medium">Unit price</th>
+                <th class="px-4 py-3 text-center font-medium">Qty</th>
+                <th class="px-4 py-3 text-right font-medium">Value</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of filteredOwnedRows(); track row.card.id) {
+                <tr class="border-b border-[var(--color-border-subtle)] last:border-0 hover:bg-[var(--color-surface-2)]">
+                  <!-- Both the thumbnail and the name open the card detail modal — note the
+                       "group" class here is required for app-card-image's hover effect, even
+                       though this row's owned=true means dimming never actually applies. -->
+                  <td class="w-12 px-4 py-2">
+                    <button type="button" class="group block w-10" (click)="openCard(row.card.id)">
+                      <app-card-image [card]="row.card" [owned]="true" />
+                    </button>
+                  </td>
+                  <td class="px-2 py-2 font-medium">
+                    <button type="button" class="hover:text-[var(--color-accent-hover)]" (click)="openCard(row.card.id)">{{ row.card.cardName }}</button>
+                  </td>
+                  <td class="px-4 py-3 text-[var(--color-text-secondary)]">{{ row.card.setName }}</td>
+                  <td class="px-4 py-3 text-[var(--color-text-secondary)]">{{ row.card.colourName }}</td>
+                  <td class="px-4 py-3 text-right text-[var(--color-text-secondary)]">{{ row.card.cardPrice | number: '1.2-2' }}</td>
+                  <td class="px-4 py-3">
+                    <div class="flex items-center justify-center gap-2">
+                      <button type="button" class="btn-secondary !px-2 !py-0.5" (click)="changeQuantity(row, -1)">-</button>
+                      <span class="w-6 text-center">{{ row.quantity }}</span>
+                      <button type="button" class="btn-secondary !px-2 !py-0.5" (click)="changeQuantity(row, 1)">+</button>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 text-right font-medium text-[var(--color-gold)]">{{ row.card.cardPrice * row.quantity | number: '1.2-2' }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <button type="button" class="text-xs text-red-400 hover:text-red-300" (click)="remove(row)">Remove</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </div>
+</div>

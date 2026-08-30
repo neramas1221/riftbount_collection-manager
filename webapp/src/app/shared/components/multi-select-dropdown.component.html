@@ -1,0 +1,44 @@
+<!-- `relative` here is what makes the dropdown panel below position itself relative to THIS
+     button rather than the whole page — see the `absolute` on the panel. -->
+<div class="relative">
+  <button
+    type="button"
+    class="input-field flex w-40 items-center justify-between gap-2 text-left"
+    (click)="toggleOpen()"
+  >
+    <span class="truncate">{{ label() }}: <span class="text-[var(--color-text-primary)]">{{ summary() }}</span></span>
+    <span class="text-[var(--color-text-muted)]">{{ open() ? '▲' : '▼' }}</span>
+  </button>
+
+  @if (open()) {
+    <!-- top-full = "positioned right below the button". This whole panel only exists in the
+         DOM while open() is true — closing it actually removes these elements rather than
+         just hiding them, which is what @if does differently from a CSS-only hide/show. -->
+    <div class="absolute left-0 top-full z-20 mt-1 max-h-72 w-56 overflow-y-auto rounded-lg border border-[var(--color-border-subtle)] bg-[var(--color-surface-2)] py-1.5 shadow-xl">
+      @for (option of options(); track option.value) {
+        <button
+          type="button"
+          class="flex w-full items-center gap-2 px-3 py-1.5 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+          [class]="selected().has(option.value) ? 'text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-3)]'"
+          [disabled]="isDisabled(option.value)"
+          (click)="toggleOption.emit(option.value)"
+        >
+          <!-- A hand-drawn checkbox (a styled <span>, not a real <input type="checkbox">) —
+               shows a filled square + checkmark when selected(). -->
+          <span
+            class="flex h-4 w-4 shrink-0 items-center justify-center rounded border"
+            [class]="selected().has(option.value) ? 'border-[var(--color-accent)] bg-[var(--color-accent)]' : 'border-[var(--color-border-subtle)]'"
+          >
+            @if (selected().has(option.value)) {
+              <span class="text-[10px] leading-none text-white">✓</span>
+            }
+          </span>
+          @if (option.iconKind) {
+            <app-category-icon [kind]="option.iconKind" [name]="option.value" />
+          }
+          <span class="truncate">{{ option.label }}</span>
+        </button>
+      }
+    </div>
+  }
+</div>

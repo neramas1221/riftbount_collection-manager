@@ -1,0 +1,73 @@
+<!-- Two independently-scrolling panes side by side: set list (fixed width) | card grid (fills
+     the rest). min-h-0 here is the same fix as every other page root — see app.html. -->
+<div class="flex min-h-0 flex-1 overflow-hidden">
+  <section class="w-72 shrink-0 overflow-y-auto border-r border-[var(--color-border-subtle)] px-5 py-6">
+    <h1 class="mb-1 text-lg font-semibold">Set Browser</h1>
+    <p class="mb-5 text-sm text-[var(--color-text-secondary)]">Pick a set to see its cards.</p>
+
+    @if (refData.loadError() || allCardStore.loadError()) {
+      <div class="panel border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        Could not reach the Spring Boot API on :8080. Is it running?
+      </div>
+    } @else if (loading()) {
+      <p class="text-sm text-[var(--color-text-muted)]">Loading sets...</p>
+    } @else {
+      <ul class="flex flex-col gap-1.5">
+        @for (entry of setSummaries(); track entry.set.id) {
+          <li>
+            <button
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors"
+              [class]="entry.set.id === selectedSetId() ? 'bg-[var(--color-surface-3)] text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]'"
+              (click)="selectSet(entry.set.id)"
+            >
+              <span class="font-medium">{{ entry.set.setName }}</span>
+              <span class="text-xs text-[var(--color-text-muted)]">{{ entry.cardCount }}/{{ entry.set.totalCollectorNum }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- #cardGrid is the template reference the component's `gridEl` viewChild() picks up, so
+       selectSet() can scroll this section back to the top. -->
+  <section #cardGrid class="flex-1 overflow-y-auto px-8 py-6">
+    <!-- In practice this branch never really shows for long — the component auto-selects a
+         default set the moment sets finish loading (see the constructor's effect()). -->
+    @if (!selectedSet()) {
+      <div class="panel flex h-full items-center justify-center px-6 py-10 text-center text-sm text-[var(--color-text-secondary)]">
+        Select a set on the left to browse its cards.
+      </div>
+    } @else {
+      <header class="mb-5 flex items-baseline justify-between">
+        <div>
+          <!-- "!" (non-null assertion): the @else above already guarantees selectedSet() isn't
+               null here, but TypeScript can't narrow a *function call's* return type across
+               template branches the way it can a plain variable, so this tells it to trust us. -->
+          <h2 class="text-base font-semibold">{{ selectedSet()!.setName }}</h2>
+          <p class="text-sm text-[var(--color-text-muted)]">{{ cardsInSelectedSet().length }} of {{ selectedSet()!.totalCollectorNum }} cards loaded</p>
+        </div>
+      </header>
+
+      <div class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
+        @for (card of cardsInSelectedSet(); track card.id) {
+          <!-- `group` here is what app-card-image's internal `group-hover:` classes react to —
+               hovering anywhere in this button reveals the true colours of an unowned card. -->
+          <button type="button" class="group flex flex-col gap-1.5 text-left" (click)="openCard(card.id)">
+            <div class="relative">
+              <app-card-image [card]="card" [owned]="ownedQuantity(card.id) > 0" />
+              @if (ownedQuantity(card.id) > 0) {
+                <span class="absolute right-1 top-1 rounded-full bg-black/70 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  &times;{{ ownedQuantity(card.id) }}
+                </span>
+              }
+            </div>
+            <p class="truncate text-xs font-medium leading-snug group-hover:text-[var(--color-accent-hover)]">{{ card.cardName }}</p>
+            <p class="text-[10px] text-[var(--color-text-muted)]">#{{ card.collectorNumber }}</p>
+          </button>
+        }
+      </div>
+    }
+  </section>
+</div>

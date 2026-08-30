@@ -1,0 +1,30 @@
+<!-- The whole row is one big <button> — clicking anywhere in it (not just a tiny icon or link)
+     toggles the filter, and it's a real <button> (not a styled <div>) so it's keyboard-focusable
+     and screen readers announce it as clickable for free. -->
+<button
+  type="button"
+  class="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm transition-colors"
+  [class]="active() ? 'bg-[var(--color-surface-3)]' : 'hover:bg-[var(--color-surface-2)]'"
+  [disabled]="!clickable()"
+  (click)="rowClick.emit()"
+>
+  <!-- @if is Angular's newer control-flow syntax (replaces *ngIf). iconKind() is null for the
+       Sets panel, so this block simply doesn't render there. -->
+  @if (iconKind()) {
+    <!-- The "!" after iconKind() tells TypeScript "trust me, this isn't null here" — safe
+         because the @if above already guarantees it, but TypeScript can't infer that on its own. -->
+    <app-category-icon [kind]="iconKind()!" [name]="name()" />
+  }
+  <!-- [title] adds a native browser tooltip showing the FULL real name on hover, in case
+       label() (the possibly-shortened display name) got truncated by the surrounding layout. -->
+  <span class="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]" [title]="name()">{{ label() }}</span>
+  <span class="h-1.5 w-72 shrink-0 overflow-hidden rounded-full bg-[var(--color-surface-3)]">
+    <!-- [style.width.%] sets an inline `width: N%` directly from the pct() computed value —
+         this is how the bar visually fills proportionally to ownership. -->
+    <span class="block h-full rounded-full bg-[var(--color-accent)]" [style.width.%]="pct()"></span>
+  </span>
+  <span class="w-14 shrink-0 text-right font-medium">{{ owned() }}/{{ total() }}</span>
+  <!-- The `number` pipe formats a plain JS number for display — '1.0-0' means "at least 1
+       digit before the decimal point, 0 to 0 digits after" i.e. round to a whole number. -->
+  <span class="w-10 shrink-0 text-right text-xs text-[var(--color-text-muted)]">{{ pct() | number: '1.0-0' }}%</span>
+</button>
