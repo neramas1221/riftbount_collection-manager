@@ -1,0 +1,12 @@
+services:
+  collectors:
+    build: .
+    volumes:
+      - ./:/workspace
+    networks:
+      - card_net
+
+networks:
+  card_net:
+    name: card_net
+    external: true

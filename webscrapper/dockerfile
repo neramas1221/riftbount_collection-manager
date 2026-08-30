@@ -1,0 +1,11 @@
+FROM python:3.10
+
+RUN pip install --no-cache-dir \
+    requests==2.34.2 \
+    tqdm==4.70.0
+
+WORKDIR /workspace
+
+COPY . /workspace
+
+CMD ["sh", "-c", "while true; do python3 main.py; echo 'Scraping finished. Sleeping for 4 hours...'; sleep 14400; done"]

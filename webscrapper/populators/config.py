@@ -1,0 +1,5 @@
+base_url = "https://api.riftcodex.com"
+set_extention = "/sets"
+card_url = "/cards"
+card_api_url = "http://card-api:8080/api"
+DATA_DIR = "datasets"

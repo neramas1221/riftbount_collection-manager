@@ -1,0 +1,2 @@
+card_market_data = [["https://downloads.s3.cardmarket.com/productCatalog/productList/products_singles_22.json", "product.json"], ["https://downloads.s3.cardmarket.com/productCatalog/priceGuide/price_guide_22.json", "prices.json"]]
+base_url = "http://card-api:8080"

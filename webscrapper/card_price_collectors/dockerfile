@@ -1,0 +1,9 @@
+FROM python:3.10
+
+RUN pip install requests
+
+WORKDIR /workspace
+
+COPY . /workspace
+
+CMD ["sh", "-c", "while true; do python3 main.py; echo 'Price Update Done. Sleeping for 4 hours...'; sleep 14400; done"]
