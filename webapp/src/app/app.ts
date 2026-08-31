@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CardDetailModalComponent } from './shared/components/card-detail-modal.component';
 
@@ -25,6 +25,17 @@ interface NavItem {
   templateUrl: './app.html',
 })
 export class App {
+  /** The sidebar is a permanent column on desktop but an off-canvas drawer below the `md` breakpoint — this tracks whether that drawer is open. */
+  protected readonly sidebarOpen = signal(false);
+
+  protected toggleSidebar(): void {
+    this.sidebarOpen.update((open) => !open);
+  }
+
+  protected closeSidebar(): void {
+    this.sidebarOpen.set(false);
+  }
+
   // `protected` (rather than `public`) is the convention used everywhere in this codebase for
   // anything only the component's own template needs to read — it can't be accessed from
   // outside the component (e.g. by a parent), which isn't needed here anyway.

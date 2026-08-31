@@ -19,9 +19,13 @@ export class OwnedCardService {
     return this.http.get<OwnedCard[]>(this.baseUrl);
   }
 
-  /** POST /api/owned-cards — create or update the owned quantity for one card ("upsert" = update-or-insert). */
-  upsert(request: OwnedCardRequest): Observable<OwnedCard> {
-    return this.http.post<OwnedCard>(this.baseUrl, request);
+  /**
+   * POST /api/owned-cards — create or update the owned quantity for one card ("upsert" =
+   * update-or-insert). Quirk worth knowing: if `quantity` is <= 0, the backend deletes the row
+   * instead of saving a zero and returns a null body — this method's return type reflects that.
+   */
+  upsert(request: OwnedCardRequest): Observable<OwnedCard | null> {
+    return this.http.post<OwnedCard | null>(this.baseUrl, request);
   }
 
   /** DELETE /api/owned-cards/{id} — remove an owned-card row entirely (id is the OwnedCard's own id, not the card's). */

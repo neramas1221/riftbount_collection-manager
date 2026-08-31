@@ -7,8 +7,10 @@
 @if (modal.activeCardId() !== null && card(); as c) {
   <!-- Clicking the dark backdrop closes the modal. The prev/next arrow buttons and the panel
        itself all call $event.stopPropagation() so clicking THEM doesn't bubble up to this
-       backdrop's (click) and close the modal by accident. -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8" (click)="modal.close()">
+       backdrop's (click) and close the modal by accident. p-0 on mobile (vs sm:px-4 sm:py-8) is
+       because the panel goes edge-to-edge full-screen below `sm` — no backdrop margin left for
+       the floating side arrows to sit in there, see the header's prev/next buttons instead. -->
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-0 sm:px-4 sm:py-8" (click)="modal.close()">
     <button
       type="button"
       class="absolute left-4 top-1/2 hidden -translate-y-1/2 rounded-full bg-black/40 p-3 text-2xl text-white hover:bg-black/60 sm:block"
@@ -18,24 +20,44 @@
     </button>
 
     <div
-      class="panel relative flex h-[90vh] w-[94vw] max-w-7xl flex-col overflow-hidden bg-[var(--color-surface-1)]"
+      class="panel relative flex h-full w-full flex-col overflow-hidden rounded-none bg-[var(--color-surface-1)] sm:h-[90vh] sm:w-[94vw] sm:max-w-7xl sm:rounded-xl"
       (click)="$event.stopPropagation()"
     >
-      <header class="flex items-start justify-between border-b border-[var(--color-border-subtle)] px-6 py-5">
-        <div>
-          <h2 class="text-2xl font-semibold">{{ c.cardName }}</h2>
-          <p class="text-base text-[var(--color-text-muted)]">{{ c.typeName }}</p>
+      <header class="flex items-center justify-between gap-3 border-b border-[var(--color-border-subtle)] px-4 py-4 sm:px-6 sm:py-5">
+        <div class="min-w-0">
+          <h2 class="truncate text-lg font-semibold sm:text-2xl">{{ c.cardName }}</h2>
+          <p class="text-sm text-[var(--color-text-muted)] sm:text-base">{{ c.typeName }}</p>
         </div>
-        <button type="button" class="text-2xl text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]" (click)="modal.close()">
-          &times;
-        </button>
+        <div class="flex shrink-0 items-center gap-1">
+          <!-- Mobile-only prev/next — the floating side arrows above have nowhere to float on a
+               full-screen mobile panel, so these stand in for them below the `sm` breakpoint. -->
+          <button
+            type="button"
+            class="rounded-full p-2 text-xl text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)] sm:hidden"
+            (click)="modal.step(-1)"
+            aria-label="Previous card"
+          >
+            &lsaquo;
+          </button>
+          <button
+            type="button"
+            class="rounded-full p-2 text-xl text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)] sm:hidden"
+            (click)="modal.step(1)"
+            aria-label="Next card"
+          >
+            &rsaquo;
+          </button>
+          <button type="button" class="rounded-full p-2 text-2xl text-[var(--color-text-muted)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]" (click)="modal.close()">
+            &times;
+          </button>
+        </div>
       </header>
 
       <!-- [owned]="true" here (always true, not ownedCardStore-driven) is deliberate — this is
            a detail VIEW, so it always shows the card in full colour regardless of whether you
            actually own it; the "Your collection" panel further down is what tells you that. -->
-      <div class="grid grid-cols-1 gap-10 overflow-y-auto px-8 py-8 sm:grid-cols-[420px_1fr]">
-        <div class="mx-auto w-full max-w-[420px]">
+      <div class="grid grid-cols-1 gap-6 overflow-y-auto px-4 py-5 sm:gap-10 sm:px-8 sm:py-8 sm:grid-cols-[420px_1fr]">
+        <div class="mx-auto w-full max-w-[280px] sm:max-w-[420px]">
           <app-card-image [card]="c" [owned]="true" />
         </div>
 
@@ -43,29 +65,29 @@
           <!-- Set/Rarity/Type/Colour are all rendered as clickable buttons (not plain text) —
                clicking one calls goToFilter(), which jumps to Card Database pre-filtered by
                that value. See card-detail-modal.component.ts for how that hand-off works. -->
-          <div class="grid grid-cols-2 gap-x-6 gap-y-5 text-base">
+          <div class="grid grid-cols-2 gap-x-4 gap-y-4 text-base sm:gap-x-6 sm:gap-y-5">
             <div>
               <p class="text-sm text-[var(--color-text-muted)]">Set</p>
-              <button type="button" class="text-left text-lg font-medium text-[var(--color-accent)] hover:underline" (click)="goToFilter('set', c.setName)">
+              <button type="button" class="text-left text-base font-medium text-[var(--color-accent)] hover:underline sm:text-lg" (click)="goToFilter('set', c.setName)">
                 {{ c.setName }}
               </button>
             </div>
             <div>
               <p class="text-sm text-[var(--color-text-muted)]">Card number</p>
-              <p class="text-lg font-medium">#{{ c.collectorNumber }}</p>
+              <p class="text-base font-medium sm:text-lg">#{{ c.collectorNumber }}</p>
             </div>
 
             @if (c.rarityName) {
               <div>
                 <p class="text-sm text-[var(--color-text-muted)]">Rarity</p>
-                <button type="button" class="text-left text-lg font-medium text-[var(--color-accent)] hover:underline" (click)="goToFilter('rarity', c.rarityName)">
+                <button type="button" class="text-left text-base font-medium text-[var(--color-accent)] hover:underline sm:text-lg" (click)="goToFilter('rarity', c.rarityName)">
                   {{ c.rarityName }}
                 </button>
               </div>
             }
             <div>
               <p class="text-sm text-[var(--color-text-muted)]">Card type</p>
-              <button type="button" class="text-left text-lg font-medium text-[var(--color-accent)] hover:underline" (click)="goToFilter('type', c.typeName)">
+              <button type="button" class="text-left text-base font-medium text-[var(--color-accent)] hover:underline sm:text-lg" (click)="goToFilter('type', c.typeName)">
                 {{ c.typeName }}
               </button>
             </div>
@@ -73,7 +95,7 @@
             @if (!isBattlefield()) {
               <div class="col-span-2">
                 <p class="text-sm text-[var(--color-text-muted)]">Colour</p>
-                <button type="button" class="text-left text-lg font-medium text-[var(--color-accent)] hover:underline" (click)="goToFilter('colour', colourFilterValue())">
+                <button type="button" class="text-left text-base font-medium text-[var(--color-accent)] hover:underline sm:text-lg" (click)="goToFilter('colour', colourFilterValue())">
                   {{ c.colourName }}
                 </button>
               </div>
@@ -86,17 +108,17 @@
             <div class="grid grid-cols-3 gap-3 rounded-lg bg-[var(--color-surface-2)] px-4 py-4 text-center">
               <div>
                 <p class="text-sm text-[var(--color-text-muted)]">Energy</p>
-                <p class="text-3xl font-semibold">{{ c.energy ?? '—' }}</p>
+                <p class="text-2xl font-semibold sm:text-3xl">{{ c.energy ?? '—' }}</p>
               </div>
               <div>
                 <p class="text-sm text-[var(--color-text-muted)]">Might</p>
                 <!-- Spells specifically have no Might even though they're not Battlefields —
                      a second, narrower hiding rule than the block above. -->
-                <p class="text-3xl font-semibold">{{ isSpell() ? '—' : (c.might ?? '—') }}</p>
+                <p class="text-2xl font-semibold sm:text-3xl">{{ isSpell() ? '—' : (c.might ?? '—') }}</p>
               </div>
               <div>
                 <p class="text-sm text-[var(--color-text-muted)]">Power</p>
-                <p class="text-3xl font-semibold">{{ c.power ?? '—' }}</p>
+                <p class="text-2xl font-semibold sm:text-3xl">{{ c.power ?? '—' }}</p>
               </div>
             </div>
           }
@@ -130,17 +152,19 @@
 
           <div class="flex items-baseline justify-between border-t border-[var(--color-border-subtle)] pt-4">
             <span class="text-sm text-[var(--color-text-muted)]">Market price</span>
-            <span class="text-3xl font-semibold text-[var(--color-gold)]">{{ c.cardPrice | number: '1.2-2' }}</span>
+            <span class="text-2xl font-semibold text-[var(--color-gold)] sm:text-3xl">{{ c.cardPrice | number: '1.2-2' }}</span>
           </div>
 
           <!-- `as o` again, same trick as `as c` above — owned() is a computed(), so calling it
-               twice would be fine either way (it's cached), but storing it once is clearer. -->
+               twice would be fine either way (it's cached), but storing it once is clearer.
+               Stacks vertically below `sm` — the quantity number plus three buttons side by side
+               was too tight for a narrow phone screen. -->
           <div class="rounded-lg bg-[var(--color-surface-2)] px-5 py-4">
             @if (owned(); as o) {
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p class="text-sm text-[var(--color-text-muted)]">You own</p>
-                  <p class="text-3xl font-semibold">{{ o.quantity }}</p>
+                  <p class="text-2xl font-semibold sm:text-3xl">{{ o.quantity }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                   <button type="button" class="btn-secondary !px-4 !py-2 !text-base" (click)="changeQuantity(-1)">-</button>
@@ -149,7 +173,7 @@
                 </div>
               </div>
             } @else {
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-base text-[var(--color-text-secondary)]">Not in your collection yet.</p>
                 <button type="button" class="btn-primary !px-4 !py-2 !text-base" (click)="changeQuantity(1)">+ Add to collection</button>
               </div>

@@ -2,10 +2,21 @@
   App shell: a fixed-height (h-screen) flex row of [sidebar nav][routed page content], with the
   card detail modal floating on top of everything. This template never changes between pages —
   only whatever <router-outlet> renders inside <main> does.
+
+  Below the `md` breakpoint (768px) the sidebar becomes an off-canvas drawer instead of a
+  permanent column — `fixed` positions it out of normal flow and a `translate-x` slide-in/out
+  based on sidebarOpen() shows/hides it, with a dark backdrop behind it to tap-to-close. At `md`
+  and above, `md:static md:translate-x-0` cancel both of those out and it rejoins the row as a
+  normal, always-visible flex item — the exact desktop layout this had before.
 -->
 <div class="flex h-screen w-screen overflow-hidden bg-[var(--color-surface-0)] text-[var(--color-text-primary)]">
+  @if (sidebarOpen()) {
+    <div class="fixed inset-0 z-30 bg-black/60 md:hidden" (click)="closeSidebar()"></div>
+  }
+
   <aside
-    class="flex w-60 shrink-0 flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-surface-1)]"
+    class="fixed inset-y-0 left-0 z-40 flex w-72 max-w-[85vw] shrink-0 flex-col border-r border-[var(--color-border-subtle)] bg-[var(--color-surface-1)] transition-transform duration-200 md:static md:w-60 md:max-w-none md:translate-x-0"
+    [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full'"
   >
     <div class="flex items-center gap-2 border-b border-[var(--color-border-subtle)] px-5 py-4">
       <div
@@ -32,6 +43,7 @@
           routerLinkActive="bg-[var(--color-surface-3)] text-[var(--color-text-primary)]"
           [routerLinkActiveOptions]="{ exact: false }"
           class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-[var(--color-text-secondary)] transition-colors hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]"
+          (click)="closeSidebar()"
         >
           <!-- Icons are drawn as inline SVG paths (from navItems[].icon) rather than an <img>
                or icon font, so they inherit `currentColor` and recolor automatically with the
@@ -62,13 +74,33 @@
     </div>
   </aside>
 
-  <!-- min-h-0 here matters more than it looks: without it, this flex child refuses to shrink
-       below its content's natural height, so the page below never gets a bounded height to
-       scroll within — see the pages' own root divs for the matching half of this fix. -->
-  <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-    <!-- Whichever routed component matches the current URL (see app.routes.ts) renders here. -->
-    <router-outlet />
-  </main>
+  <!-- min-h-0/min-w-0 here matters more than it looks: without it, this flex child refuses to
+       shrink below its content's natural size, so the page below never gets a bounded box to
+       scroll within — see the pages' own root divs for the matching half of this fix. This div
+       replaces <main> as the row's second flex item so a mobile-only top bar can sit above
+       <main> without breaking that chain (main itself is still exactly what it was before). -->
+  <div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+    <!-- Mobile-only top bar: with the sidebar hidden off-canvas below `md`, this is the only way
+         to reach it, plus it gives every page a consistent "where am I" brand mark on phones. -->
+    <div class="flex items-center gap-3 border-b border-[var(--color-border-subtle)] px-4 py-3 md:hidden">
+      <button
+        type="button"
+        class="rounded-lg p-1.5 text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]"
+        (click)="toggleSidebar()"
+        aria-label="Open menu"
+      >
+        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <span class="text-sm font-semibold">RiftDex</span>
+    </div>
+
+    <main class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <!-- Whichever routed component matches the current URL (see app.routes.ts) renders here. -->
+      <router-outlet />
+    </main>
+  </div>
 
   <!-- Always present in the DOM but renders nothing until a card is opened (see
        CardDetailModalService.activeCardId) — mounting it once here, rather than per-page, is

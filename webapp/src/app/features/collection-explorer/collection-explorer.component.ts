@@ -98,11 +98,8 @@ export class CollectionExplorerComponent implements OnInit {
   protected changeQuantity(row: OwnedCardRow, delta: number): void {
     const owned = this.ownedCardStore.ownedByCardId().get(row.card.id);
     if (!owned) return;
-    const nextQuantity = owned.quantity + delta;
-    if (nextQuantity <= 0) {
-      this.ownedCardStore.remove(owned.id).subscribe();
-      return;
-    }
+    const nextQuantity = Math.max(0, owned.quantity + delta);
+    // setQuantity handles nextQuantity === 0 as a removal itself (see OwnedCardStore).
     this.ownedCardStore.setQuantity(row.card.id, nextQuantity).subscribe();
   }
 

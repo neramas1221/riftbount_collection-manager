@@ -87,7 +87,7 @@ export class CollectionStatsService {
         owned: rows
           .filter((r) => r.card.cardRarity === rarity.id)
           .reduce((sum, r) => sum + r.quantity, 0),
-        total: this.allCardStore.cards().filter((c) => c.cardRarity === rarity.id).length,
+        total: this.allCardStore.cards().filter((c) => c.cardRarity === rarity.id).length * 3,
       }))
       .filter((b) => b.total > 0); // hide rarities that don't exist in the DB at all
   });

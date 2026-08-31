@@ -2,13 +2,13 @@
      lets #scrollArea below actually get a bounded height to scroll within — see app.html for
      the rest of this explanation. -->
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-  <header class="border-b border-[var(--color-border-subtle)] px-8 py-5">
+  <header class="border-b border-[var(--color-border-subtle)] px-4 py-5 sm:px-8">
     <h1 class="text-lg font-semibold">Collection Explorer</h1>
     <p class="text-sm text-[var(--color-text-secondary)]">Track the cards you own and their current value.</p>
   </header>
 
   <!-- The only element in this page that actually scrolls — the header above stays fixed. -->
-  <div #scrollArea class="flex-1 overflow-y-auto px-8 py-6">
+  <div #scrollArea class="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6">
     @if (refData.loadError() || allCardStore.loadError() || ownedCardStore.loadError()) {
       <div class="panel mb-6 border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
         Could not reach the Spring Boot API on :8080. Is it running?
@@ -130,7 +130,7 @@
       <!-- Table filter bar -->
       <div class="mb-4 flex flex-wrap items-center gap-3">
         <input
-          class="input-field !w-56"
+          class="input-field w-full sm:!w-56"
           type="text"
           placeholder="Filter your collection..."
           [ngModel]="tableNameFilter()"
@@ -141,7 +141,7 @@
              already a string, but [ngValue] is the correct binding for ngModel-driven <select>s
              in general (e.g. if these options held numbers or objects instead). -->
         <select
-          class="input-field !w-48"
+          class="input-field w-full sm:!w-48"
           [ngModel]="filterSetName()"
           (ngModelChange)="filterSetName.set($event)"
         >
@@ -166,13 +166,19 @@
           }
         </div>
       } @else {
-        <div class="panel overflow-hidden">
+        <!-- overflow-x-auto (not overflow-hidden) is the important part here: on a phone-width
+             screen this table is wider than the viewport no matter how much padding gets
+             trimmed, so rather than clip columns off entirely, the table scrolls horizontally
+             within this box while the rest of the page stays put. The Set/Colour columns are
+             also hidden below `sm` to shrink how much there is to scroll through in the first
+             place — Card/Qty/Value are the columns worth seeing without scrolling at all. -->
+        <div class="panel overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-[var(--color-border-subtle)] text-left text-xs uppercase tracking-wide text-[var(--color-text-muted)]">
                 <th class="px-4 py-3 font-medium" colspan="2">Card</th>
-                <th class="px-4 py-3 font-medium">Set</th>
-                <th class="px-4 py-3 font-medium">Colour</th>
+                <th class="hidden px-4 py-3 font-medium sm:table-cell">Set</th>
+                <th class="hidden px-4 py-3 font-medium sm:table-cell">Colour</th>
                 <th class="px-4 py-3 text-right font-medium">Unit price</th>
                 <th class="px-4 py-3 text-center font-medium">Qty</th>
                 <th class="px-4 py-3 text-right font-medium">Value</th>
@@ -193,8 +199,8 @@
                   <td class="px-2 py-2 font-medium">
                     <button type="button" class="hover:text-[var(--color-accent-hover)]" (click)="openCard(row.card.id)">{{ row.card.cardName }}</button>
                   </td>
-                  <td class="px-4 py-3 text-[var(--color-text-secondary)]">{{ row.card.setName }}</td>
-                  <td class="px-4 py-3 text-[var(--color-text-secondary)]">{{ row.card.colourName }}</td>
+                  <td class="hidden px-4 py-3 text-[var(--color-text-secondary)] sm:table-cell">{{ row.card.setName }}</td>
+                  <td class="hidden px-4 py-3 text-[var(--color-text-secondary)] sm:table-cell">{{ row.card.colourName }}</td>
                   <td class="px-4 py-3 text-right text-[var(--color-text-secondary)]">{{ row.card.cardPrice | number: '1.2-2' }}</td>
                   <td class="px-4 py-3">
                     <div class="flex items-center justify-center gap-2">

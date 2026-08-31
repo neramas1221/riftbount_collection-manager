@@ -1,9 +1,13 @@
-<!-- Two independently-scrolling panes side by side: set list (fixed width) | card grid (fills
-     the rest). min-h-0 here is the same fix as every other page root — see app.html. -->
-<div class="flex min-h-0 flex-1 overflow-hidden">
-  <section class="w-72 shrink-0 overflow-y-auto border-r border-[var(--color-border-subtle)] px-5 py-6">
+<!-- Two independently-scrolling panes: side by side on desktop (set list | card grid), stacked
+     on mobile (a horizontally-scrolling row of set chips on top, the grid below) — a second
+     permanent fixed-width side panel is exactly the kind of thing that makes a phone screen feel
+     squished, so below `md` this becomes a compact top strip instead. min-h-0 here is the same
+     fix as every other page root — see app.html. -->
+<div class="flex min-h-0 flex-1 flex-col overflow-hidden md:flex-row">
+  <section class="w-full shrink-0 overflow-x-auto border-b border-[var(--color-border-subtle)] px-4 py-3 md:w-72 md:overflow-x-visible md:overflow-y-auto md:border-b-0 md:border-r md:px-5 md:py-6">
     <h1 class="mb-1 text-lg font-semibold">Set Browser</h1>
-    <p class="mb-5 text-sm text-[var(--color-text-secondary)]">Pick a set to see its cards.</p>
+    <!-- Hidden on mobile purely to save vertical space — the chip row below is self-explanatory. -->
+    <p class="mb-5 hidden text-sm text-[var(--color-text-secondary)] md:block">Pick a set to see its cards.</p>
 
     @if (refData.loadError() || allCardStore.loadError()) {
       <div class="panel border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
@@ -12,12 +16,15 @@
     } @else if (loading()) {
       <p class="text-sm text-[var(--color-text-muted)]">Loading sets...</p>
     } @else {
-      <ul class="flex flex-col gap-1.5">
+      <!-- flex row + overflow-x-auto on mobile (a scrollable chip strip); flex-col on desktop
+           (the original vertical list). shrink-0 on each <li> stops chips getting squashed
+           when they don't all fit — they scroll horizontally instead. -->
+      <ul class="flex gap-1.5 overflow-x-auto pb-1 md:flex-col md:overflow-visible md:pb-0">
         @for (entry of setSummaries(); track entry.set.id) {
-          <li>
+          <li class="shrink-0 md:w-full">
             <button
               type="button"
-              class="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors"
+              class="flex w-full items-center justify-between gap-2 whitespace-nowrap rounded-lg px-3 py-2.5 text-left text-sm transition-colors"
               [class]="entry.set.id === selectedSetId() ? 'bg-[var(--color-surface-3)] text-[var(--color-text-primary)]' : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-2)] hover:text-[var(--color-text-primary)]'"
               (click)="selectSet(entry.set.id)"
             >
@@ -32,7 +39,7 @@
 
   <!-- #cardGrid is the template reference the component's `gridEl` viewChild() picks up, so
        selectSet() can scroll this section back to the top. -->
-  <section #cardGrid class="flex-1 overflow-y-auto px-8 py-6">
+  <section #cardGrid class="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6">
     <!-- In practice this branch never really shows for long — the component auto-selects a
          default set the moment sets finish loading (see the constructor's effect()). -->
     @if (!selectedSet()) {

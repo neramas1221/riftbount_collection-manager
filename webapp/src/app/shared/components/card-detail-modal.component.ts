@@ -67,12 +67,10 @@ export class CardDetailModalComponent {
     const cardId = this.modal.activeCardId();
     if (cardId === null) return;
     const current = this.owned();
-    const nextQuantity = (current?.quantity ?? 0) + delta;
-
-    if (nextQuantity <= 0) {
-      if (current) this.ownedCardStore.remove(current.id).subscribe();
-      return;
-    }
+    const nextQuantity = Math.max(0, (current?.quantity ?? 0) + delta);
+    // setQuantity handles nextQuantity === 0 as a removal itself (see OwnedCardStore) — no
+    // need to branch to remove() here, which would need current.id to already be a real,
+    // server-confirmed id.
     this.ownedCardStore.setQuantity(cardId, nextQuantity).subscribe();
   }
 

@@ -1,5 +1,5 @@
 <div class="flex min-h-0 flex-1 flex-col overflow-hidden">
-  <header class="border-b border-[var(--color-border-subtle)] px-8 py-5">
+  <header class="border-b border-[var(--color-border-subtle)] px-4 py-5 sm:px-8">
     <h1 class="text-lg font-semibold">Card Database</h1>
     <p class="text-sm text-[var(--color-text-secondary)]">Search & filter every card.</p>
   </header>
@@ -7,10 +7,10 @@
   <!-- Always-visible filter row: name search + Set/Colour dropdowns + the "More filters" toggle.
        There's no Search button anywhere on this page — every input here writes straight to a
        signal, and the component's filterRequest computed (+ debounce) reacts automatically. -->
-  <div class="flex flex-col gap-3 border-b border-[var(--color-border-subtle)] px-8 py-4">
+  <div class="flex flex-col gap-3 border-b border-[var(--color-border-subtle)] px-4 py-4 sm:px-8">
     <div class="flex flex-wrap items-center gap-3">
       <input
-        class="input-field !w-64"
+        class="input-field w-full sm:!w-64"
         type="text"
         placeholder="Search card name..."
         [ngModel]="nameFilter()"
@@ -161,7 +161,7 @@
     }
   </div>
 
-  <section #cardGrid class="flex-1 overflow-y-auto px-8 py-6">
+  <section #cardGrid class="flex-1 overflow-y-auto px-4 py-4 sm:px-8 sm:py-6">
     @if (loadError()) {
       <div class="panel mb-6 border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
         {{ loadError() }}

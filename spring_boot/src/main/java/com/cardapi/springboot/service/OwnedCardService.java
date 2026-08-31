@@ -3,6 +3,9 @@ package com.cardapi.springboot.service;
 import java.util.List;
 import java.util.stream.Collectors  ;
 
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import com.cardapi.springboot.dto.OwnedCardRequest;
@@ -23,26 +26,25 @@ public class OwnedCardService {
     private final OwnedCardRepository ownedCardRepository;
     private final AllCardRepository allCardRepository;
 
-        @Transactional
-        public OwnedCardResponse upsertOwnedCard(OwnedCardRequest request){
+
+    @Transactional
+    public OwnedCardResponse upsertOwnedCard(OwnedCardRequest request){
         if (request.getQuantity() <= 0){
             ownedCardRepository.findByAllCardId(request.getAllCardId()).ifPresent(ownedCardRepository::delete);
             return null;
         }
 
-        OwnedCard ownedCard = ownedCardRepository.findByAllCardId(request.getAllCardId()).orElseGet(() -> {
-            AllCard cardToLink = allCardRepository.findById(request.getAllCardId())
-            .orElseThrow(() -> new EntityNotFoundException("Card not found with ID: " + request.getAllCardId()));
-            return OwnedCard.builder()
-                            .allCard(cardToLink)
-                            .build();
-        });
-        
-        ownedCard.setQuantity(request.getQuantity());
-        OwnedCard savedEntity = ownedCardRepository.save(ownedCard);
+        if (!allCardRepository.existsById(request.getAllCardId())){
+            throw new EntityNotFoundException("Card not found with ID: " + request.getAllCardId());
+        }
 
-        return mapToResponse(savedEntity);
-    }
+        ownedCardRepository.upsertCardQuantity(request.getAllCardId(), request.getQuantity());
+
+        OwnedCard savedEntity = ownedCardRepository.findByAllCardId(request.getAllCardId())
+            .orElseThrow(() -> new IllegalStateException("Card must exist after upsert"));
+            
+            return mapToResponse(savedEntity);
+        }
 
     public void deleteOwnedCard(int id){
         ownedCardRepository.deleteById(id);

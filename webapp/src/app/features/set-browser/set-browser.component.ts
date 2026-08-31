@@ -28,6 +28,11 @@ export class SetBrowserComponent implements OnInit {
 
   protected readonly loading = computed(() => !this.allCardStore.loaded() || !this.refData.loaded());
 
+  // protected quickAdd(cardId: number): void {
+  //   const next = this.ownedQuantity(cardId) + this.copiesToAdd();
+  //   this.ownedCardStore.setQuantity(cardId, next).subscribe();
+  // }
+
   /** Every set, alongside how many of its cards are actually loaded (may be less than the set's real totalCollectorNum if the DB import isn't complete). */
   protected readonly setSummaries = computed(() => {
     const counts = new Map<number, number>();

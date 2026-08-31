@@ -18,7 +18,10 @@
   <!-- [title] adds a native browser tooltip showing the FULL real name on hover, in case
        label() (the possibly-shortened display name) got truncated by the surrounding layout. -->
   <span class="min-w-0 flex-1 truncate text-[var(--color-text-secondary)]" [title]="name()">{{ label() }}</span>
-  <span class="h-1.5 w-72 shrink-0 overflow-hidden rounded-full bg-[var(--color-surface-3)]">
+  <!-- w-72 (from a previous "make the bars wider" request) badly overflows a phone-width panel
+       — this row already has ~100px of other fixed-width content (icon + qty + %), so the bar
+       shrinks to w-16 below `sm` and only takes its full desktop width once there's room. -->
+  <span class="h-1.5 w-16 shrink-0 overflow-hidden rounded-full bg-[var(--color-surface-3)] sm:w-72">
     <!-- [style.width.%] sets an inline `width: N%` directly from the pct() computed value —
          this is how the bar visually fills proportionally to ownership. -->
     <span class="block h-full rounded-full bg-[var(--color-accent)]" [style.width.%]="pct()"></span>
